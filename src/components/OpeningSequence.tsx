@@ -1,368 +1,416 @@
 import React, { useState } from 'react';
 import { HAIR_COLORS, OUTFITS, SKIN_TONES, formatRp } from '../data/catalog';
-import { soundEngine } from '../engine/audio';
-import type { InitialPlan, OwnerAppearance } from '../types/game';
-import { ChibiPortrait, JandaAvatar } from './ChibiPortrait';
+import type { OwnerAppearance, StarterPlan } from '../types/game';
+import { ChibiPortrait, JandaSvg } from './ChibiPortrait';
 
 interface OpeningSequenceProps {
-  initialAppearance: OwnerAppearance;
-  onFinish: (appearance: OwnerAppearance, plan: InitialPlan, sentPhotoToAdik: boolean) => void;
+  initialOwner: OwnerAppearance;
+  onComplete: (appearance: OwnerAppearance, plan: StarterPlan) => void;
 }
 
-export const OpeningSequence: React.FC<OpeningSequenceProps> = ({ initialAppearance, onFinish }) => {
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [appearance, setAppearance] = useState<OwnerAppearance>(initialAppearance);
-  const [sentPhoto, setSentPhoto] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<InitialPlan>('dua_standar');
+export const OpeningSequence: React.FC<OpeningSequenceProps> = ({
+  initialOwner,
+  onComplete,
+}) => {
+  const [step, setStep] = useState(0);
+  const [owner, setOwner] = useState<OwnerAppearance>(initialOwner);
+  const [photoSent, setPhotoSent] = useState(false);
+  const [plan, setPlan] = useState<StarterPlan>('dua_standar');
 
-  const starterOutfits = OUTFITS.filter((o) => o.price === 0);
+  const starterOutfits = OUTFITS.slice(0, 5);
 
   return (
-    <div className="opening-overlay">
-      <div className="opening-card">
-        <div className="opening-progress">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <span key={s} className={`prog-dot ${step >= s ? 'active' : ''}`} />
-          ))}
+    <div className="fullscreen-scene">
+      <div className="scene-card">
+        {/* Top banner */}
+        <div
+          style={{
+            padding: '14px 20px',
+            background: 'var(--green-dark)',
+            color: '#fffdf8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700 }}>
+              KOST TEXAS
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.85 }}>
+              Prolog · Langkah {step + 1} dari 5
+            </div>
+          </div>
+          <span className="badge badge-amber">Kos Bebas 24 Jam</span>
         </div>
 
-        {step === 1 && (
-          <div className="opening-step">
-            <div className="opening-illustration">
-              <svg viewBox="0 0 360 155" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 14 }}>
-                <rect width="360" height="155" fill="#F4E3C2" />
-                <circle cx="300" cy="34" r="24" fill="#F6CE6B" opacity="0.7" />
-                <rect x="0" y="102" width="360" height="53" fill="#7FA06D" />
-                {/* Mango tree */}
-                <rect x="46" y="42" width="18" height="70" rx="5" fill="#6D472D" />
-                <circle cx="54" cy="36" r="34" fill="#23533C" />
-                <circle cx="84" cy="48" r="24" fill="#347052" />
-                <circle cx="42" cy="52" r="5" fill="#E9B44C" />
-                <circle cx="72" cy="56" r="5" fill="#E9B44C" />
-                {/* Old wooden bench */}
-                <rect x="135" y="92" width="98" height="11" rx="3" fill="#8C5332" />
-                <rect x="145" y="103" width="8" height="20" fill="#633A22" />
-                <rect x="215" y="103" width="8" height="20" fill="#633A22" />
-                {/* Family photo box */}
-                <rect x="100" y="96" width="26" height="18" rx="3" fill="#C99A63" stroke="#7A522C" strokeWidth="2" />
-                {/* Cat carrier & Janda jumping out */}
-                <rect x="258" y="94" width="32" height="22" rx="5" fill="#C85A32" />
-                <rect x="263" y="99" width="14" height="13" rx="2" fill="#244B3A" />
-                {/* Janda tuxedo cat on bench */}
-                <g transform="translate(172, 66)">
-                  <ellipse cx="14" cy="22" rx="12" ry="8" fill="#1C201F" />
-                  <ellipse cx="18" cy="23" rx="5.5" ry="5" fill="#FBF6EC" />
-                  <circle cx="20" cy="12" r="8" fill="#1C201F" />
-                  <polygon points="14,8 16,1 21,7" fill="#1C201F" />
-                  <polygon points="22,7 26,1 28,9" fill="#1C201F" />
-                  <ellipse cx="21" cy="15" rx="4" ry="2.6" fill="#FBF6EC" />
-                  <circle cx="17.5" cy="11.5" r="1.7" fill="#F6CE6B" />
-                  <circle cx="23.5" cy="11.5" r="1.7" fill="#F6CE6B" />
-                </g>
-              </svg>
-            </div>
-            <span className="eyebrow">Ujung Gang Dekat Kampus · Pagi Cerah</span>
-            <h2>Tanah Peninggalan Orang Tua</h2>
-            <p className="story-text">
-              Di tanah kosong yang teduh di bawah pohon mangga tua, kamu membuka kotak kayu berisi foto keluarga dan sepucuk surat tulisan tangan orang tuamu:
-            </p>
-            <blockquote className="letter-quote">
-              “Tanah ini kami titipkan ke kamu. Kalau suatu hari kamu bingung mau mulai dari mana, mulai aja dari sini.”
-            </blockquote>
-            <div className="janda-note">
-              <JandaAvatar size={46} />
-              <p>
-                <strong>Janda</strong>, kucing tuxedo betinamu, keluar dari carrier, mengendus rumput sekitar, lalu melompat naik ke pangkuanmu. <em>Foto pertama kalian di bangku mangga otomatis tersimpan ke Galeri HP!</em>
-              </p>
-            </div>
-            <button
-              id="btn-opening-next-1"
-              className="btn-primary full"
-              onClick={() => {
-                soundEngine.playMeow();
-                setStep(2);
-              }}
-            >
-              Atur Tampilan Owner Chibi →
-            </button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="opening-step">
-            <span className="eyebrow">Identitas Owner Kost Texas</span>
-            <h2>Pilih Nama & Gaya Chibimu</h2>
-
-            <div className="customizer-preview">
-              <ChibiPortrait
-                hairStyle={appearance.hairStyle}
-                hairColor={appearance.hairColor}
-                skinTone={appearance.skinTone}
-                outfitId={appearance.outfitId}
-                size={96}
-              />
-              <div className="customizer-name-box">
-                <label htmlFor="input-owner-name">Nama Panggilan Owner</label>
-                <input
-                  id="input-owner-name"
-                  type="text"
-                  maxLength={18}
-                  value={appearance.name}
-                  onChange={(e) => setAppearance({ ...appearance, name: e.target.value })}
-                  placeholder="Misal: Rani / Dito"
-                />
-              </div>
-            </div>
-
-            <div className="customizer-section">
-              <label>Gaya Rambut</label>
-              <div className="chip-row">
-                {(
-                  [
-                    ['bob', 'Bob'],
-                    ['pendek', 'Pendek'],
-                    ['belah_tengah', 'Belah Tengah'],
-                    ['bergelombang', 'Panjang'],
-                    ['cepol', 'Cepol'],
-                  ] as const
-                ).map(([id, lbl]) => (
-                  <button
-                    key={id}
-                    className={`chip-btn ${appearance.hairStyle === id ? 'active' : ''}`}
-                    onClick={() => setAppearance({ ...appearance, hairStyle: id })}
-                  >
-                    {lbl}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="customizer-row-2">
-              <div className="customizer-section">
-                <label>Warna Rambut</label>
-                <div className="swatch-row">
-                  {HAIR_COLORS.map((hc) => (
-                    <button
-                      key={hc.id}
-                      className={`swatch-btn ${appearance.hairColor === hc.hex ? 'active' : ''}`}
-                      style={{ backgroundColor: hc.hex }}
-                      title={hc.name}
-                      onClick={() => setAppearance({ ...appearance, hairColor: hc.hex })}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="customizer-section">
-                <label>Warna Kulit</label>
-                <div className="swatch-row">
-                  {SKIN_TONES.map((st) => (
-                    <button
-                      key={st.id}
-                      className={`swatch-btn ${appearance.skinTone === st.hex ? 'active' : ''}`}
-                      style={{ backgroundColor: st.hex }}
-                      title={st.name}
-                      onClick={() => setAppearance({ ...appearance, skinTone: st.hex })}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="customizer-section">
-              <label>Outfit Awal</label>
-              <div className="outfit-choice-grid">
-                {starterOutfits.map((o) => (
-                  <button
-                    key={o.id}
-                    className={`plan-mini-card ${appearance.outfitId === o.id ? 'selected' : ''}`}
-                    onClick={() => setAppearance({ ...appearance, outfitId: o.id })}
-                  >
-                    <strong>{o.name}</strong>
-                    <small>{o.description}</small>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="opening-actions">
-              <button className="btn-secondary" onClick={() => setStep(1)}>
-                ← Kembali
-              </button>
-              <button
-                id="btn-opening-next-2"
-                className="btn-primary"
-                onClick={() => {
-                  soundEngine.playChatPing();
-                  setStep(3);
+        {/* Body */}
+        <div style={{ padding: '20px 22px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {step === 0 && (
+            <>
+              <div
+                style={{
+                  borderRadius: 18,
+                  padding: 18,
+                  background: 'linear-gradient(155deg, #c7e0be 0%, #f5e2ba 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 18,
+                  border: '1px solid rgba(29,78,56,0.18)',
                 }}
               >
-                Lanjut →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="opening-step">
-            <span className="eyebrow">Pesan Masuk & Tetangga Gang</span>
-            <h2>Kabar dari Raka & Bu Sari</h2>
-
-            <div className="mock-chat-card">
-              <div className="mock-chat-bubble npc">
-                <strong>Raka (Adik · Kuliah Luar Kota)</strong>
-                <p>“Kak, udah sampai? Kirim foto dong. Aku udah lupa pohon mangganya segede apa.”</p>
+                <ChibiPortrait
+                  hairStyle={owner.hairStyle}
+                  hairColor={owner.hairColor}
+                  skinTone={owner.skinTone}
+                  outfitId={owner.outfitId}
+                  size={84}
+                />
+                <JandaSvg pose="lap" size={88} />
               </div>
-              {sentPhoto ? (
-                <div className="mock-chat-bubble owner">
-                  <strong>{appearance.name || 'Kamu'}</strong>
-                  <p>📷 Mengirim: <em>Foto Pertama di Bangku Mangga + Janda</em></p>
-                </div>
-              ) : (
-                <button
-                  id="btn-opening-send-photo"
-                  className="btn-accent full"
-                  onClick={() => {
-                    soundEngine.playShutter();
-                    setSentPhoto(true);
+
+              <div className="card" style={{ borderLeft: '4px solid var(--terracotta)' }}>
+                <p style={{ margin: '0 0 8px', fontSize: 13.5 }}>
+                  Kamu kembali ke tanah kosong peninggalan orang tuamu di ujung gang dekat kampus. Di bawah pohon mangga tua ada bangku kayu lama dan kotak kecil berisi foto keluarga serta sepucuk surat.
+                </p>
+                <blockquote
+                  style={{
+                    margin: '10px 0',
+                    padding: '10px 14px',
+                    background: 'var(--amber-soft)',
+                    borderRadius: 12,
+                    fontStyle: 'italic',
+                    fontWeight: 600,
+                    color: '#523407',
                   }}
                 >
-                  📸 Kirim Foto Bangku Mangga & Janda ke Raka
-                </button>
-              )}
-            </div>
-
-            <div className="neighbor-card">
-              <ChibiPortrait
-                hairStyle="cepol"
-                hairColor="#363230"
-                skinTone="#C2855C"
-                outfitId="millennial_linen"
-                size={52}
-              />
-              <div>
-                <strong>Bu Sari (Tetangga Sebelah)</strong>
-                <p>
-                  “Eh {appearance.name || 'Nak'}, pas banget kamu pulang! Mahasiswa kampus sebelah lagi banyak cari <strong>kos bebas campur akses 24 jam</strong>. Sini kukenalin ke <strong>Kang Budi</strong>, kepala tukang andalan gang kita.”
+                  “Tanah ini kami titipkan ke kamu. Kalau suatu hari kamu bingung mau mulai dari mana, mulai aja dari sini.”
+                </blockquote>
+                <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--ink-muted)' }}>
+                  Saat kamu duduk di bangku membaca surat itu, <strong>Janda</strong> — kucing tuxedo betina kesayanganmu — keluar pelan dari carrier, mengendus rumput sekitar, lalu melompat naik ke pangkuanmu.
                 </p>
+                <div style={{ marginTop: 10 }}>
+                  <span className="badge badge-green">📸 Foto pertama di Bangku Mangga tersimpan ke Galeri HP</span>
+                </div>
               </div>
-            </div>
 
-            <div className="opening-actions">
-              <button className="btn-secondary" onClick={() => setStep(2)}>
-                ← Kembali
-              </button>
-              <button
-                id="btn-opening-next-3"
-                className="btn-primary"
-                onClick={() => {
-                  soundEngine.playClick();
-                  setStep(4);
-                }}
-              >
-                Pilih Denah Awal via HP →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="opening-step">
-            <span className="eyebrow">Modal Usaha: {formatRp(35000000)} · Saldo Pribadi: {formatRp(1000000)}</span>
-            <h2>Pilih Denah Awal Kost Texas</h2>
-            <p className="story-text">
-              Semua kamar di Kost Texas menganut konsep <strong>kos bebas dewasa (akses 24 jam, bebas tamu & menginap, privasi kamar terjaga)</strong>. Pilih titik awal pembangunanmu:
-            </p>
-
-            <div className="plan-grid">
-              <button
-                id="plan-dua-standar"
-                className={`plan-card ${selectedPlan === 'dua_standar' ? 'selected' : ''}`}
-                onClick={() => setSelectedPlan('dua_standar')}
-              >
-                <div className="plan-badge">Direkomendasikan · Risiko Rendah</div>
-                <h3>Denah A: 2 Kamar Standar</h3>
-                <div className="plan-price">{formatRp(18000000)}</div>
-                <ul>
-                  <li>2 Kamar Standar (101 & 102) + utilitas dasar</li>
-                  <li>Target sewa <strong>Rp850.000/kamar</strong> (Rp1,7jt/30 hari)</li>
-                  <li>Sisa cadangan dana usaha lebih lega: <strong>Rp17.000.000</strong></li>
-                  <li>Cocok untuk langsung buka Wi-Fi, parkiran, & usaha tambahan</li>
-                </ul>
-              </button>
-
-              <button
-                id="plan-satu-premium"
-                className={`plan-card ${selectedPlan === 'satu_premium' ? 'selected' : ''}`}
-                onClick={() => setSelectedPlan('satu_premium')}
-              >
-                <div className="plan-badge alt">Margin Tinggi · Kamar Mandi Dalam</div>
-                <h3>Denah B: 1 Kamar Premium</h3>
-                <div className="plan-price">{formatRp(22000000)}</div>
-                <ul>
-                  <li>1 Kamar Premium (104) KM dalam, AC, Kasur Queen & Meja Besar</li>
-                  <li>Target sewa <strong>Rp1.650.000/30 hari</strong> (cocok kontrak bersama!)</li>
-                  <li>Sisa dana usaha: <strong>Rp13.000.000</strong></li>
-                  <li>Catatan: jika kamar kosong, belum ada pemasukan sewa lain</li>
-                </ul>
-              </button>
-            </div>
-
-            <div className="opening-actions">
-              <button className="btn-secondary" onClick={() => setStep(3)}>
-                ← Kembali
-              </button>
-              <button
-                id="btn-opening-next-4"
-                className="btn-primary"
-                onClick={() => {
-                  soundEngine.playClick();
-                  setStep(5);
-                }}
-              >
-                Pasang Papan KOST TEXAS →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="opening-step center">
-            <div className="signboard-preview">
-              <div className="wooden-sign">
-                <span>KOST TEXAS</span>
-                <small>KOS CAMPUR DEWASA · AKSES 24 JAM</small>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button className="btn btn-primary" onClick={() => setStep(1)}>
+                  Lanjut · Atur Tampilan Owner
+                </button>
               </div>
-            </div>
-            <h2>Siap Memulai Hidup Baru di Gang!</h2>
-            <p className="story-text">
-              Kang Budi dan tim tukang siap membangun{' '}
-              <strong>{selectedPlan === 'dua_standar' ? 'Kamar 101 & 102 (Standar)' : 'Kamar 104 (Premium KM Dalam)'}</strong>.
-              Pembangunan awal selesai besok pagi (Hari #2). Sambil menunggu, kamu bisa keliling gang, menaruh mangkuk Janda, dan main Kejar Tali!
-            </p>
-            <div className="bonus-callout">
-              🎁 Menyelesaikan opening akan menuntaskan misi <strong>“Mulai dari Sini” (+Rp100.000 ke rekening usaha)</strong>.
-            </div>
-            <div className="opening-actions">
-              <button className="btn-secondary" onClick={() => setStep(4)}>
-                ← Ubah Denah
-              </button>
-              <button
-                id="btn-opening-finish"
-                className="btn-primary large"
-                onClick={() => {
-                  soundEngine.playMoney();
-                  onFinish(
-                    { ...appearance, name: appearance.name.trim() || 'Rani' },
-                    selectedPlan,
-                    sentPhoto
-                  );
+            </>
+          )}
+
+          {step === 1 && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <div
+                  style={{
+                    background: '#f2e8d4',
+                    borderRadius: 18,
+                    padding: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <ChibiPortrait
+                    hairStyle={owner.hairStyle}
+                    hairColor={owner.hairColor}
+                    skinTone={owner.skinTone}
+                    outfitId={owner.outfitId}
+                    size={86}
+                  />
+                  <JandaSvg pose="sit" size={62} />
+                </div>
+
+                <div style={{ flex: 1, minWidth: 210 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                    Nama Owner
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={18}
+                    value={owner.name}
+                    onChange={(e) => setOwner({ ...owner, name: e.target.value })}
+                    placeholder="Masukkan namamu"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: 10,
+                      border: '1.5px solid var(--border-strong)',
+                      background: '#fff',
+                      fontSize: 14,
+                      fontWeight: 600,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                <div className="card">
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Model Rambut</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {(['pendek', 'bob', 'panjang', 'ikal'] as const).map((h) => (
+                      <button
+                        key={h}
+                        className={`btn btn-sm ${owner.hairStyle === h ? 'btn-primary' : 'btn-soft'}`}
+                        onClick={() => setOwner({ ...owner, hairStyle: h })}
+                      >
+                        {h.charAt(0).toUpperCase() + h.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="card">
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Warna Rambut</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {HAIR_COLORS.map((c) => (
+                      <button
+                        key={c.hex}
+                        title={c.label}
+                        onClick={() => setOwner({ ...owner, hairColor: c.hex })}
+                        style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: '50%',
+                          background: c.hex,
+                          border: owner.hairColor === c.hex ? '3px solid var(--amber)' : '2px solid #fff',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="card">
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Warna Kulit</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {SKIN_TONES.map((s) => (
+                      <button
+                        key={s.hex}
+                        title={s.label}
+                        onClick={() => setOwner({ ...owner, skinTone: s.hex })}
+                        style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: '50%',
+                          background: s.hex,
+                          border: owner.skinTone === s.hex ? '3px solid var(--green-dark)' : '2px solid #fff',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Outfit Awal (Bisa ganti kapan saja)</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {starterOutfits.map((o) => (
+                    <button
+                      key={o.id}
+                      className={`btn btn-sm ${owner.outfitId === o.id ? 'btn-terracotta' : 'btn-soft'}`}
+                      onClick={() => setOwner({ ...owner, outfitId: o.id })}
+                    >
+                      {o.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button className="btn btn-soft" onClick={() => setStep(0)}>
+                  Kembali
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    if (!owner.name.trim()) setOwner({ ...owner, name: 'Dira' });
+                    setStep(2);
+                  }}
+                >
+                  Simpan Tampilan & Cek HP
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <ChibiPortrait
+                    hairStyle="panjang"
+                    hairColor="#3a2822"
+                    skinTone={owner.skinTone}
+                    outfitId="oversized_cargo"
+                    size={44}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 800 }}>Rani (Adik · Kuliah di Bandung)</div>
+                    <div style={{ fontSize: 11.5, color: 'var(--ink-muted)' }}>Pesan masuk baru saja</div>
+                  </div>
+                </div>
+
+                <div className="chat-bubble incoming">
+                  “Kak, udah sampai? Kirim foto dong. Aku udah lupa pohon mangganya segede apa.”
+                </div>
+
+                {photoSent && (
+                  <>
+                    <div className="chat-bubble outgoing">
+                      📸 [Mengirim foto: Hari Pertama di Bangku Mangga bersama Janda]
+                    </div>
+                    <div className="chat-bubble incoming">
+                      “Waaah gede banget masih rindang! Janda langsung betah di pangkuan Kakak ya 🖤🤍 Semangat ya Kak mulai dari tanah itu!”
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <button className="btn btn-soft" onClick={() => setStep(1)}>
+                  Kembali
+                </button>
+                {!photoSent ? (
+                  <button className="btn btn-terracotta" onClick={() => setPhotoSent(true)}>
+                    📸 Kirim Foto Pohon Mangga & Janda
+                  </button>
+                ) : (
+                  <button className="btn btn-primary" onClick={() => setStep(3)}>
+                    Lanjut · Sambut Tetangga
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <div className="card" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <ChibiPortrait hairStyle="bob" hairColor="#2b2420" skinTone="#c58c63" outfitId="linen_slacks" size={50} />
+                <div>
+                  <div style={{ fontWeight: 800 }}>Bu Wati (Tetangga Gang) & Pak Slamet (Tukang)</div>
+                  <p style={{ margin: '4px 0 0', fontSize: 13 }}>
+                    “Eh Nak {owner.name}! Mahasiswa sekitar sini sama pekerja shift banyak banget yang cari <strong>kos bebas 24 jam</strong> yang rapi & aman. Ini Pak Slamet bisa langsung bantu bangun tahap awal. Modal usahamu sekarang <strong>{formatRp(35_000_000)}</strong> — mau pilih denah yang mana?”
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+                <button
+                  onClick={() => setPlan('dua_standar')}
+                  className="card"
+                  style={{
+                    textAlign: 'left',
+                    border: plan === 'dua_standar' ? '2.5px solid var(--green-dark)' : '1.5px solid var(--border)',
+                    background: plan === 'dua_standar' ? 'var(--green-soft)' : 'var(--cream-card)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong>2 Kamar Standar</strong>
+                    <span className="badge badge-green">Rp18 Juta</span>
+                  </div>
+                  <p style={{ fontSize: 12.5, margin: '8px 0', color: 'var(--ink-muted)' }}>
+                    Kamar 101 & 102 siap cepat dengan cadangan dana usaha lebih besar (<strong>Rp17 juta</strong>).
+                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--green-dark)' }}>
+                    • Target sewa: Rp850.000 / kamar / 30 hari<br />
+                    • Risiko kosong terbagi ke 2 kamar
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setPlan('satu_premium')}
+                  className="card"
+                  style={{
+                    textAlign: 'left',
+                    border: plan === 'satu_premium' ? '2.5px solid var(--terracotta)' : '1.5px solid var(--border)',
+                    background: plan === 'satu_premium' ? 'var(--terracotta-soft)' : 'var(--cream-card)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong>1 Kamar Premium</strong>
+                    <span className="badge badge-terracotta">Rp22 Juta</span>
+                  </div>
+                  <p style={{ fontSize: 12.5, margin: '8px 0', color: 'var(--ink-muted)' }}>
+                    Kamar 101 luas + kamar mandi dalam, kasur queen & AC. Cadangan dana <strong>Rp13 juta</strong>.
+                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--terracotta-dark)' }}>
+                    • Target sewa: Rp1,65 juta / 30 hari<br />
+                    • Kamar 102 bisa ditambah kapan saja via Proyek
+                  </div>
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button className="btn btn-soft" onClick={() => setStep(2)}>
+                  Kembali
+                </button>
+                <button className="btn btn-primary" onClick={() => setStep(4)}>
+                  Konfirmasi Denah & Pasang Papan
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 4 && (
+            <>
+              <div
+                style={{
+                  borderRadius: 18,
+                  padding: '26px 18px',
+                  background: 'linear-gradient(155deg, #21523b 0%, #3d6d4d 100%)',
+                  textAlign: 'center',
+                  color: '#fffdf8',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
                 }}
               >
-                🔨 Pasang Papan & Mulai Bermain!
-              </button>
-            </div>
-          </div>
-        )}
+                <div
+                  style={{
+                    background: '#4a2e1d',
+                    border: '4px solid #e6a632',
+                    borderRadius: 14,
+                    padding: '14px 28px',
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 28,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    color: '#fce9b5',
+                    boxShadow: '0 10px 26px rgba(0,0,0,0.35)',
+                  }}
+                >
+                  KOST TEXAS
+                </div>
+                <div style={{ fontSize: 13.5, maxWidth: 440, opacity: 0.94 }}>
+                  Kos campur dewasa · Akses 24 jam · Bebas tamu & tanpa jam malam. Pak Slamet sudah mulai menata fondasi pilihanmu ({plan === 'dua_standar' ? '2 Kamar Standar' : '1 Kamar Premium'})!
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button className="btn btn-soft" onClick={() => setStep(3)}>
+                  Ganti Denah
+                </button>
+                <button
+                  className="btn btn-amber"
+                  style={{ fontSize: 14.5, padding: '11px 22px' }}
+                  onClick={() => onComplete(owner, plan)}
+                >
+                  🔨 Pasang Papan KOST TEXAS & Mulai Hari 1!
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

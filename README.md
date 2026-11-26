@@ -1,19 +1,32 @@
-# KOST TEXAS — Game Web Life Sim & Business Management
+# React + TypeScript + Vite
 
-Bangun kos bebas dari nol di tanah peninggalan orang tua di ujung gang Indonesia, rawat **Janda** si kucing tuxedo, bantu adik yang kuliah di luar kota, jalin relasi, dan kembangkan usaha dari kamar kos hingga rental motor, warung/restoran kecil, dan rumah kontrakan.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Main Langsung di Browser / HP
-👉 **https://pactform.github.io/kost-texas/**
+Currently, two official plugins are available:
 
-## Fitur Utama
-- **Identitas Kos Bebas Dewasa**: Akses 24 jam, bebas tamu & menginap tanpa jam malam, privasi kamar terjaga, kontrak bersama pasangan, serta penanganan dampak realistis (parkir, kebisingan teras, utilitas).
-- **Peta Isometrik Interaktif (Desktop & HP)**: Kontrol WASD/Panah atau tap-to-walk dengan pathfinding, 3 lantai + mode potong dinding, cuaca hujan & genangan, pencahayaan Pagi/Siang/Sore/Malam, dan karakter Chibi + outfit mix-and-match.
-- **HP Owner Lengkap (9 Aplikasi)**: Pesan (aksi terhubung langsung ke jadwal/mutasi), Bank (rekening usaha & pribadi, escrow deposit, cicilan, verifikasi transfer & deteksi bukti palsu), Properti, Rental Motor & Bengkel, Warung/Restoran Kecil, Kalender Gang, Peta Gang, Galeri Foto, dan Misi berhadiah otomatis.
-- **Janda Si Kucing Tuxedo**: Rawat harian, taruh mangkuk & kardus favorit, foto & jadikan wallpaper HP, serta 3 mini-game interaktif (**Kejar Tali**, **Janda di Mana?**, **Foto Pas!**).
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Pengembangan Lokal
-```bash
-npm install
-npm run dev
-npm run build
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the Oxlint configuration
+
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `tsrs` and editing `.oxlintrc.json`:
+
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
+
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.

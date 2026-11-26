@@ -1,8 +1,8 @@
-name: Deploy Kost Texas to GitHub Pages
+name: Deploy KOST TEXAS to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,8 +11,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -29,7 +29,9 @@ jobs:
         run: npm ci
       - name: Build production bundle
         run: npm run build
-      - name: Upload Pages artifact
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

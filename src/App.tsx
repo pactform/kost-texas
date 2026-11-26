@@ -1,23 +1,53 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import {
+  Building2,
   Clock,
+  Hammer,
   Moon,
   Settings,
+  Shirt,
   Smartphone,
+  Target,
+  Users,
   Volume2,
   VolumeX,
 } from 'lucide-react';
 import { ChibiPortrait, JandaAvatar } from './components/ChibiPortrait';
 import { GameModals } from './components/GameModals';
-import { IsometricWorld } from './components/IsometricWorld';
 import { JandaMiniGames } from './components/JandaMiniGames';
 import { OpeningSequence } from './components/OpeningSequence';
 import { PhoneUI } from './components/PhoneUI';
 import { RoomRenovationModal } from './components/RoomRenovationModal';
+import { ThreeWorld } from './components/ThreeWorld';
 import { SLOT_LABELS, WEATHER_LABELS, formatRp } from './data/catalog';
 import { soundEngine } from './engine/audio';
 import { createInitialState, gameReducer, loadSavedState, saveGameState } from './engine/store';
 import type { GameState } from './types/game';
+
+const SLOT_CLOCK: Record<string, string> = {
+  pagi: '07.30',
+  siang: '12.30',
+  sore: '17.30',
+  malam: '21.00',
+};
+
+async function tryLockLandscape() {
+  try {
+    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+    }
+  } catch {
+    // Fullscreen optional on iOS Safari
+  }
+  try {
+    const orient = screen.orientation as unknown as { lock?: (o: string) => Promise<void> };
+    if (orient?.lock) {
+      await orient.lock('landscape');
+    }
+  } catch {
+    // Browser may disallow orientation lock outside fullscreen
+  }
+}
 
 export default function App() {
   const [savedSnapshot, setSavedSnapshot] = useState<GameState | null>(() => loadSavedState());
@@ -27,10 +57,30 @@ export default function App() {
   });
   const [skipOpeningChoice, setSkipOpeningChoice] = useState(false);
 
-  // Guard rapid clicks on "Lanjut Hari / Tidur"
+  // Strict Mobile Landscape Gate check (blocks portrait play on mobile devices!)
+  const [isMobilePortrait, setIsMobilePortrait] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.innerHeight > window.innerWidth && Math.min(window.innerWidth, window.innerHeight) <= 920
+      : false
+  );
+
+  useEffect(() => {
+    const checkOrient = () => {
+      const portrait = window.innerHeight > window.innerWidth;
+      const smallDevice = Math.min(window.innerWidth, window.innerHeight) <= 920;
+      setIsMobilePortrait(portrait && smallDevice);
+    };
+    checkOrient();
+    window.addEventListener('resize', checkOrient);
+    window.addEventListener('orientationchange', checkOrient);
+    return () => {
+      window.removeEventListener('resize', checkOrient);
+      window.removeEventListener('orientationchange', checkOrient);
+    };
+  }, []);
+
   const dayAdvanceLockRef = useRef<number>(0);
 
-  // Persist automatically on every playing state update
   useEffect(() => {
     if (state.screen === 'playing') {
       saveGameState(state);
@@ -40,17 +90,15 @@ export default function App() {
     }
   }, [state]);
 
-  // Auto-dismiss toasts after 4.5s
   useEffect(() => {
     if (state.toasts.length === 0) return;
     const latest = state.toasts[0];
     const timer = window.setTimeout(() => {
       dispatch({ type: 'DISMISS_TOAST', id: latest.id });
-    }, 4500);
+    }, 3600);
     return () => window.clearTimeout(timer);
   }, [state.toasts]);
 
-  // Apply reduced-motion class on root
   useEffect(() => {
     document.documentElement.classList.toggle('reduced-motion', state.reducedMotion);
   }, [state.reducedMotion]);
@@ -63,95 +111,122 @@ export default function App() {
     dispatch({ type: 'ADVANCE_DAY', expectedDay: state.day });
   };
 
+  // === STRICT MOBILE PORTRAIT LOCK OVERLAY ===
+  const landscapeGate = isMobilePortrait ? (
+    <div className="landscape-lock-overlay" role="dialog" aria-modal="true" aria-label="Wajib Mode Landscape">
+      <div className="landscape-lock-card">
+        <div className="rotate-phone-anim" aria-hidden="true">
+          <div className="phone-outline">
+            <div className="phone-screen-mini">KOST TEXAS 3D</div>
+          </div>
+        </div>
+        <h2>Putar HP ke Posisi Landscape</h2>
+        <p>
+          <strong>KOST TEXAS 3D</strong> hanya dapat dimainkan dalam posisi <strong>miring (landscape)</strong> agar seluruh bangunan kos bertingkat, interior kamar 3D, dan jalan gang terlihat jelas & nyaman.
+        </p>
+        <button className="btn-primary full" onClick={tryLockLandscape}>
+          📱 Aktifkan Fullscreen Landscape
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   // === 1. TITLE SCREEN ===
   if (state.screen === 'title') {
     return (
-      <main className="title-screen">
-        <div className="title-card">
-          <div className="title-badge">Game Web Life Sim & Business Management</div>
-          <div className="title-hero-art">
-            <div className="wooden-sign hero">
-              <span>KOST TEXAS</span>
-              <small>KOS BEBAS DEWASA · AKSES 24 JAM · GANG TROPIS</small>
+      <>
+        {landscapeGate}
+        <main className="title-screen">
+          <div className="title-card">
+            <div className="title-badge">3D Life Sim & Business Management · Gang Indonesia</div>
+            <div className="title-hero-art">
+              <div className="wooden-sign hero">
+                <span>KOST TEXAS</span>
+                <small>KOS BEBAS DEWASA · AKSES 24 JAM · 3D WORLD</small>
+              </div>
+              <div className="title-mascots">
+                <ChibiPortrait
+                  hairStyle="bob"
+                  hairColor="#231F20"
+                  skinTone="#DFAA82"
+                  outfitId="genz_oversized"
+                  size={72}
+                />
+                <JandaAvatar size={72} />
+              </div>
             </div>
-            <div className="title-mascots">
-              <ChibiPortrait
-                hairStyle="bob"
-                hairColor="#231F20"
-                skinTone="#DFAA82"
-                outfitId="genz_oversized"
-                size={76}
-              />
-              <JandaAvatar size={76} />
-            </div>
-          </div>
-          <h1>KOST TEXAS</h1>
-          <p className="title-desc">
-            Warisi tanah pohon mangga peninggalan orang tuamu, bangun kos bebas dari nol hingga tiga lantai, kelola rental motor, warung gang, rumah kontrakan, bantu adik kuliah, dan rawat <strong>Janda</strong> si kucing tuxedo!
-          </p>
+            <h1>KOST TEXAS</h1>
+            <p className="title-desc">
+              Warisi tanah pohon mangga orang tuamu, bangun kos bebas 3D hingga 3 lantai, intip interior kamar penuh perabot, kelola rental motor, warung gang, rumah kontrakan, dan rawat <strong>Janda</strong> si kucing tuxedo!
+            </p>
 
-          <div className="title-actions">
-            {savedSnapshot && (
+            <div className="title-actions">
+              {savedSnapshot && (
+                <button
+                  id="btn-title-continue"
+                  className="btn-primary large full"
+                  onClick={() => {
+                    soundEngine.playClick();
+                    if (window.matchMedia('(pointer: coarse)').matches) tryLockLandscape();
+                    dispatch({ type: 'CONTINUE_GAME', saved: savedSnapshot });
+                  }}
+                >
+                  ▶ Lanjutkan (Hari #{savedSnapshot.day} · {savedSnapshot.owner.name})
+                </button>
+              )}
+
               <button
-                id="btn-title-continue"
-                className="btn-primary large full"
+                id="btn-title-new"
+                className={savedSnapshot ? 'btn-secondary large full' : 'btn-primary large full'}
                 onClick={() => {
                   soundEngine.playClick();
-                  dispatch({ type: 'CONTINUE_GAME', saved: savedSnapshot });
+                  if (window.matchMedia('(pointer: coarse)').matches) tryLockLandscape();
+                  if (savedSnapshot) {
+                    const ok = window.confirm(
+                      'Mulai Game Baru akan mengganti progres tersimpan sebelumnya setelah opening selesai. Lanjutkan?'
+                    );
+                    if (!ok) return;
+                  }
+                  dispatch({ type: 'START_NEW_GAME', skipOpening: skipOpeningChoice });
                 }}
               >
-                ▶ Lanjutkan (Hari #{savedSnapshot.day} · {savedSnapshot.owner.name})
+                🌱 Game Baru
               </button>
-            )}
 
-            <button
-              id="btn-title-new"
-              className={savedSnapshot ? 'btn-secondary large full' : 'btn-primary large full'}
-              onClick={() => {
-                soundEngine.playClick();
-                if (savedSnapshot) {
-                  // Require confirmation before overwriting existing save!
-                  const ok = window.confirm(
-                    'Mulai Game Baru akan mengganti progres tersimpan sebelumnya setelah opening selesai. Lanjutkan?'
-                  );
-                  if (!ok) return;
-                }
-                dispatch({ type: 'START_NEW_GAME', skipOpening: skipOpeningChoice });
-              }}
-            >
-              🌱 Game Baru
-            </button>
-
-            {(savedSnapshot || state.hasPlayedBefore) && (
-              <label className="toggle-inline center-toggle">
-                <input
-                  id="chk-skip-opening"
-                  type="checkbox"
-                  checked={skipOpeningChoice}
-                  onChange={(e) => setSkipOpeningChoice(e.target.checked)}
-                />
-                Lewati adegan opening (langsung pasang papan & bangun 2 kamar standar)
-              </label>
-            )}
+              {(savedSnapshot || state.hasPlayedBefore) && (
+                <label className="toggle-inline center-toggle">
+                  <input
+                    id="chk-skip-opening"
+                    type="checkbox"
+                    checked={skipOpeningChoice}
+                    onChange={(e) => setSkipOpeningChoice(e.target.checked)}
+                  />
+                  Lewati adegan opening (langsung pasang papan & bangun 2 kamar standar)
+                </label>
+              )}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </>
     );
   }
 
   // === 2. OPENING SEQUENCE ===
   if (state.screen === 'opening') {
     return (
-      <OpeningSequence
-        initialAppearance={state.owner}
-        onFinish={(appearance, plan, sentPhotoToAdik) =>
-          dispatch({ type: 'COMPLETE_OPENING', appearance, plan, sentPhotoToAdik })
-        }
-      />
+      <>
+        {landscapeGate}
+        <OpeningSequence
+          initialAppearance={state.owner}
+          onFinish={(appearance, plan, sentPhotoToAdik) =>
+            dispatch({ type: 'COMPLETE_OPENING', appearance, plan, sentPhotoToAdik })
+          }
+        />
+      </>
     );
   }
 
-  // === 3. MAIN PLAYABLE WORLD ===
+  // === 3. FULLSCREEN 3D LANDSCAPE GAME WORLD + INDONESIAN TYCOON HUD (IMG_0802) ===
   const totalPhoneNotifs =
     state.chats.reduce((s, c) => s + c.unread, 0) +
     state.transferClaims.filter((c) => c.status === 'menunggu_verifikasi').length +
@@ -168,6 +243,8 @@ export default function App() {
           ? '🌦️'
           : '⛈️';
 
+  const pinnedMission = state.missions.find((m) => m.id === state.pinnedMissionId && m.status === 'active');
+
   const activeRenoModal =
     state.activeModal?.type === 'room_renovate' ? state.activeModal : null;
   const activeRenoRoom = activeRenoModal
@@ -175,124 +252,163 @@ export default function App() {
     : null;
 
   return (
-    <div className="game-layout">
-      {/* Top HUD Bar */}
-      <header className="top-hud">
-        <div className="hud-brand" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: { type: 'wardrobe' } })} title="Klik untuk ganti outfit">
-          <ChibiPortrait
-            hairStyle={state.owner.hairStyle}
-            hairColor={state.owner.hairColor}
-            skinTone={state.owner.skinTone}
-            outfitId={state.owner.outfitId}
-            size={38}
-          />
-          <div className="hud-title-col">
-            <strong>KOST TEXAS</strong>
-            <small>
-              Hari #{state.day} · {SLOT_LABELS[state.slot]} · {weatherEmoji} {WEATHER_LABELS[state.weather]}
-            </small>
+    <div className="game-layout-3d">
+      {landscapeGate}
+
+      {/* Fullscreen Real 3D World */}
+      <ThreeWorld state={state} dispatch={dispatch} />
+
+      {/* TOP-LEFT: Warm Indonesian Tycoon Owner & Cash Status Pill (IMG_0802 style!) */}
+      <div className="tycoon-top-left">
+        <div
+          className="tycoon-profile-card"
+          onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'bank' })}
+          title="Klik untuk buka Bank Texas"
+        >
+          <div className="tycoon-avatar-wrap">
+            <ChibiPortrait
+              hairStyle={state.owner.hairStyle}
+              hairColor={state.owner.hairColor}
+              skinTone={state.owner.skinTone}
+              outfitId={state.owner.outfitId}
+              size={44}
+            />
+            <span className="day-lvl-badge">H#{state.day}</span>
+          </div>
+          <div className="tycoon-cash-col">
+            <div className="tycoon-cash-main">💵 {formatRp(state.businessBalance)}</div>
+            <div className="tycoon-cash-sub">
+              <span>⭐ {state.reputation.toFixed(1)}</span>
+              <span>· Pribadi {formatRp(state.personalBalance)}</span>
+            </div>
           </div>
         </div>
 
-        <div className="hud-balances" onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'bank' })} title="Buka Bank">
-          <div className="bal-pill usaha">
-            <span>Usaha</span>
-            <strong>{formatRp(state.businessBalance)}</strong>
-          </div>
-          <div className="bal-pill pribadi">
-            <span>Pribadi</span>
-            <strong>{formatRp(state.personalBalance)}</strong>
-          </div>
-        </div>
-
-        <div className="hud-controls">
+        {/* Golden Event / Pinned Mission Ribbon (IMG_0802 "Musim Belanja Online" style!) */}
+        {pinnedMission && (
           <button
-            id="btn-next-slot"
-            className="hud-btn"
-            onClick={() => {
-              soundEngine.playClick();
-              dispatch({ type: 'ADVANCE_SLOT', slots: 1 });
-            }}
-            title="Tunggu sampai slot waktu berikutnya"
+            className="tycoon-event-ribbon"
+            onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'misi' })}
           >
-            <Clock size={16} />
-            <span className="hide-xs">Slot Berikutnya</span>
+            🎯 <strong>{pinnedMission.title}:</strong> {pinnedMission.nextStep}
+          </button>
+        )}
+      </div>
+
+      {/* TOP-CENTER/RIGHT: Chunky 3D-Beveled Indonesian Tycoon Action Buttons + Clock Pill (IMG_0802!) */}
+      <div className="tycoon-top-right">
+        <div className="tycoon-btn-strip">
+          <button
+            id="btn-hud-hp"
+            className={`tycoon-icon-btn hp ${state.phoneOpen ? 'active' : ''}`}
+            onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: !state.phoneOpen, app: 'home' })}
+          >
+            <Smartphone size={18} />
+            <span>HP</span>
+            {totalPhoneNotifs > 0 && <b className="tycoon-badge">{totalPhoneNotifs}</b>}
           </button>
 
           <button
-            id="btn-next-day"
-            className="hud-btn primary"
-            onClick={handleAdvanceDaySafe}
-            title="Tidur dan lanjut ke hari berikutnya"
+            id="btn-hud-misi"
+            className="tycoon-icon-btn"
+            onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'misi' })}
           >
-            <Moon size={16} />
-            <span>{state.facilities.kamar_owner ? 'Tidur' : 'Lanjut Hari'}</span>
+            <Target size={18} />
+            <span>Misi</span>
+          </button>
+
+          <button
+            id="btn-hud-bangun"
+            className="tycoon-icon-btn"
+            onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'properti' })}
+          >
+            <Hammer size={18} />
+            <span>Bangun</span>
+          </button>
+
+          <button
+            id="btn-hud-staf"
+            className="tycoon-icon-btn"
+            onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'rental' })}
+          >
+            <Building2 size={18} />
+            <span>Usaha</span>
+          </button>
+
+          <button
+            id="btn-hud-outfit"
+            className="tycoon-icon-btn"
+            onClick={() => dispatch({ type: 'OPEN_MODAL', modal: { type: 'wardrobe' } })}
+          >
+            <Shirt size={18} />
+            <span>Outfit</span>
+          </button>
+
+          <button
+            id="btn-hud-npc"
+            className="tycoon-icon-btn"
+            onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'peta' })}
+          >
+            <Users size={18} />
+            <span>Warga</span>
           </button>
 
           <button
             id="btn-mute"
-            className="hud-icon-btn"
+            className="tycoon-icon-btn mini-sq"
             onClick={() => dispatch({ type: 'TOGGLE_MUTE' })}
-            aria-label={state.muted ? 'Nyalakan Suara' : 'Matikan Suara'}
-            title={state.muted ? 'Nyalakan Suara' : 'Bisukan Suara'}
+            aria-label={state.muted ? 'Nyalakan Suara' : 'Bisukan Suara'}
           >
-            {state.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            {state.muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
 
           <button
             id="btn-settings"
-            className="hud-icon-btn"
+            className="tycoon-icon-btn mini-sq"
             onClick={() => dispatch({ type: 'OPEN_MODAL', modal: { type: 'settings' } })}
             aria-label="Pengaturan"
-            title="Pengaturan & Mulai Ulang"
           >
-            <Settings size={18} />
+            <Settings size={16} />
           </button>
         </div>
-      </header>
 
-      {/* Main Split Workspace: Isometric World + Docked Phone (Desktop) / Overlay Phone (Mobile) */}
-      <div className="workspace-split">
-        <section className="world-pane">
-          <IsometricWorld state={state} dispatch={dispatch} />
-        </section>
-
-        <PhoneUI state={state} dispatch={dispatch} />
+        {/* Clock & Time Advance Pill (IMG_0802 "17.30" brown capsule!) */}
+        <div className="tycoon-clock-capsule">
+          <div className="clock-readout">
+            <strong>{SLOT_CLOCK[state.slot]}</strong>
+            <small>
+              {SLOT_LABELS[state.slot]} {weatherEmoji} {WEATHER_LABELS[state.weather].split(' ')[0]}
+            </small>
+          </div>
+          <button
+            id="btn-next-slot"
+            className="clock-act-btn"
+            onClick={() => {
+              soundEngine.playClick();
+              dispatch({ type: 'ADVANCE_SLOT', slots: 1 });
+            }}
+            title="Lanjut ke slot waktu berikutnya"
+          >
+            <Clock size={14} /> +Slot
+          </button>
+          <button
+            id="btn-next-day"
+            className="clock-act-btn sleep"
+            onClick={handleAdvanceDaySafe}
+            title="Tidur & Lanjut Hari"
+          >
+            <Moon size={14} /> {state.facilities.kamar_owner ? 'Tidur' : 'Lanjut'}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Floating Bar to Open HP / Janda / Outfit */}
-      <nav className="mobile-bottom-bar" aria-label="Menu Cepat Mobile">
-        <button
-          id="btn-mobile-phone"
-          className="mobile-nav-btn primary"
-          onClick={() => dispatch({ type: 'SET_PHONE_OPEN', open: true, app: 'home' })}
-        >
-          <Smartphone size={18} />
-          <span>Buka HP</span>
-          {totalPhoneNotifs > 0 && <span className="badge-pill">{totalPhoneNotifs}</span>}
-        </button>
-        <button
-          className="mobile-nav-btn"
-          onClick={() => dispatch({ type: 'OPEN_MODAL', modal: { type: 'janda_interact' } })}
-        >
-          🐾 Janda
-        </button>
-        <button
-          className="mobile-nav-btn"
-          onClick={() => dispatch({ type: 'OPEN_MODAL', modal: { type: 'wardrobe' } })}
-        >
-          👕 Outfit
-        </button>
-      </nav>
+      {/* Floating Smartphone Drawer (clean overlay on right side so 3D world stays visible!) */}
+      <PhoneUI state={state} dispatch={dispatch} />
 
-      {/* Toast Notifications */}
-      <div className="toast-stack" aria-live="polite">
-        {state.toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`toast-item ${t.tone}`}
-            onClick={() => dispatch({ type: 'DISMISS_TOAST', id: t.id })}
-          >
+      {/* Non-blocking Compact Toast Stack */}
+      <div className="toast-stack-3d" aria-live="polite">
+        {state.toasts.slice(-2).map((t) => (
+          <div key={t.id} className={`toast-item ${t.tone}`}>
             {t.text}
           </div>
         ))}

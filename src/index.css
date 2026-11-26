@@ -2014,3 +2014,556 @@ input[type='number'] {
     bottom: auto;
   }
 }
+
+
+/* ============================================================================
+ * 3D FULLSCREEN LANDSCAPE WORLD + INDONESIAN TYCOON HUD (IMG_0801 & IMG_0802)
+ * ========================================================================== */
+.game-layout-3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #8fbff0;
+  user-select: none;
+}
+
+.world-3d-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.three-canvas-host {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+.three-canvas-host:active {
+  cursor: grabbing;
+}
+
+/* Top-Left Warm Wooden Profile & Cash Card (IMG_0802!) */
+.tycoon-top-left {
+  position: fixed;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 25;
+  max-width: min(360px, 46vw);
+}
+
+.tycoon-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(180deg, #623e27, #442917);
+  border: 2.5px solid #2b180c;
+  box-shadow: 0 5px 0 rgba(30, 16, 8, 0.35), inset 0 1px 0 rgba(255, 224, 175, 0.32);
+  border-radius: 18px;
+  padding: 6px 14px 6px 8px;
+  color: #fbf6ec;
+  cursor: pointer;
+}
+
+.tycoon-avatar-wrap {
+  position: relative;
+  border-radius: 50%;
+  overflow: visible;
+  border: 2.5px solid #f6ce6b;
+  background: #f3e7d2;
+  flex-shrink: 0;
+}
+.tycoon-avatar-wrap svg {
+  border-radius: 50%;
+}
+.day-lvl-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f6ce6b;
+  color: #3a200f;
+  border: 1.5px solid #3a200f;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.tycoon-cash-col {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.18;
+  min-width: 0;
+}
+.tycoon-cash-main {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.45);
+}
+.tycoon-cash-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f6ce6b;
+}
+
+.tycoon-event-ribbon {
+  text-align: left;
+  background: linear-gradient(180deg, #f3b93f, #d6931e);
+  border: 2px solid #5c370b;
+  box-shadow: 0 3px 0 rgba(62, 34, 6, 0.4);
+  color: #2b1808;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Top-Right Chunky Beveled Buttons + Clock Capsule (IMG_0802!) */
+.tycoon-top-right {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  z-index: 25;
+}
+
+.tycoon-btn-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tycoon-icon-btn {
+  position: relative;
+  min-width: 52px;
+  height: 50px;
+  padding: 4px 7px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #d67646, #ae4e24);
+  border: 2.5px solid #401c0b;
+  box-shadow: 0 4px 0 #401c0b, inset 0 1.5px 0 rgba(255, 228, 196, 0.45);
+  color: #fffaf0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-weight: 800;
+  font-size: 0.68rem;
+}
+.tycoon-icon-btn.hp {
+  background: linear-gradient(180deg, #357d5a, #1f543b);
+  border-color: #102e20;
+  box-shadow: 0 4px 0 #102e20, inset 0 1.5px 0 rgba(190, 245, 215, 0.38);
+}
+.tycoon-icon-btn.active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #102e20;
+}
+.tycoon-icon-btn.mini-sq {
+  min-width: 40px;
+  width: 40px;
+  height: 44px;
+  background: linear-gradient(180deg, #8b6a55, #614534);
+  border-color: #2f1e14;
+  box-shadow: 0 3px 0 #2f1e14;
+}
+
+.tycoon-badge {
+  position: absolute;
+  top: -6px;
+  right: -5px;
+  background: #d93829;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 99px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  font-size: 0.66rem;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tycoon-clock-capsule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(180deg, #5d3a24, #3d2414);
+  border: 2.5px solid #241309;
+  box-shadow: 0 4px 0 rgba(25, 13, 6, 0.45);
+  border-radius: 16px;
+  padding: 5px 9px;
+  color: #fff;
+}
+.clock-readout {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  padding-right: 4px;
+}
+.clock-readout strong {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.02rem;
+  color: #f6ce6b;
+}
+.clock-readout small {
+  font-size: 0.66rem;
+  color: #e8dac4;
+  white-space: nowrap;
+}
+.clock-act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(246, 206, 107, 0.35);
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.clock-act-btn.sleep {
+  background: #c85a32;
+  border-color: #f6ce6b;
+}
+
+/* Bottom-Left Touch Joystick + Lari Button (IMG_0802!) */
+.hud-bottom-left {
+  position: fixed;
+  bottom: 14px;
+  left: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  z-index: 24;
+}
+
+.virtual-joystick {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(42, 28, 18, 0.42);
+  border: 2.5px solid rgba(251, 246, 236, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+.joystick-knob {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f6ce6b, #c85a32);
+  border: 2px solid #fffdf8;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+/* Bottom-Right Floor Switcher + Zoom / Interior Square Button (IMG_0802!) */
+.hud-bottom-right {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 24;
+}
+
+.floor-pill-group {
+  display: flex;
+  gap: 4px;
+  background: rgba(45, 28, 17, 0.78);
+  border: 2px solid #f6ce6b;
+  border-radius: 14px;
+  padding: 4px;
+}
+.floor-btn-3d {
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #efe2c8;
+}
+.floor-btn-3d.active {
+  background: #f6ce6b;
+  color: #2d190b;
+}
+.floor-btn-3d.locked {
+  opacity: 0.55;
+}
+
+.game-square-btn {
+  width: 62px;
+  height: 62px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #d7c7b2, #a8937a);
+  border: 3px solid #3c2618;
+  box-shadow: 0 4px 0 #3c2618, inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  color: #2a180c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.game-square-btn.active {
+  background: linear-gradient(180deg, #f6ce6b, #d89624);
+  border-color: #4b2a08;
+}
+.sq-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.sq-lbl {
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+/* Golden Interior Dollhouse Left/Right Arrows (IMG_0801!) */
+.interior-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #f6ce6b;
+  border: 3.5px solid #fffdf8;
+  box-shadow: 0 5px 14px rgba(30, 18, 8, 0.38);
+  color: #4a2a10;
+  font-size: 1.25rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 22;
+}
+.interior-arrow.left {
+  left: 14px;
+}
+.interior-arrow.right {
+  right: 14px;
+}
+
+/* Floating Smartphone Overlay Drawer in 3D Landscape Mode */
+.phone-shell.floating-3d {
+  position: fixed;
+  top: 72px;
+  right: 12px;
+  bottom: 12px;
+  width: min(380px, 48vw);
+  border: 3px solid #2b180c;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 42px rgba(15, 26, 20, 0.45);
+  transform: translateX(calc(100% + 28px));
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 45;
+}
+.phone-shell.floating-3d.open {
+  transform: translateX(0);
+}
+.phone-shell.floating-3d .phone-close-mobile {
+  display: inline-flex;
+}
+
+/* Compact Non-Blocking Toast Stack for 3D Mode */
+.toast-stack-3d {
+  position: fixed;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 38;
+  max-width: min(380px, 60vw);
+  pointer-events: none;
+}
+
+/* Compact Landscape Mobile Adjustments (e.g. 667x375 to 932x430 Phone Landscape!) */
+@media (max-width: 960px) and (orientation: landscape) {
+  .tycoon-top-left {
+    top: 6px;
+    left: 8px;
+    max-width: 235px;
+  }
+  .tycoon-profile-card {
+    padding: 4px 10px 4px 6px;
+    gap: 7px;
+  }
+  .tycoon-cash-main {
+    font-size: 0.86rem;
+  }
+  .tycoon-cash-sub span:nth-child(2) {
+    display: none;
+  }
+  .tycoon-event-ribbon {
+    font-size: 0.65rem;
+    padding: 3px 9px;
+  }
+  .tycoon-top-right {
+    top: 6px;
+    right: 8px;
+    gap: 5px;
+  }
+  #btn-hud-staf,
+  #btn-hud-npc {
+    display: none;
+  }
+  .tycoon-icon-btn {
+    min-width: 42px;
+    height: 40px;
+    font-size: 0.6rem;
+    border-radius: 11px;
+  }
+  .tycoon-icon-btn.mini-sq {
+    min-width: 34px;
+    width: 34px;
+    height: 36px;
+  }
+  .tycoon-clock-capsule {
+    padding: 4px 7px;
+  }
+  .clock-readout strong {
+    font-size: 0.86rem;
+  }
+  .clock-act-btn {
+    padding: 4px 6px;
+    font-size: 0.66rem;
+  }
+  .virtual-joystick {
+    width: 66px;
+    height: 66px;
+  }
+  .joystick-knob {
+    width: 28px;
+    height: 28px;
+  }
+  .game-square-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 13px;
+  }
+  .phone-shell.floating-3d {
+    top: 52px;
+    bottom: 6px;
+    right: 8px;
+    width: min(370px, 52vw);
+    z-index: 50;
+  }
+  .context-action-bar {
+    bottom: 10px;
+  }
+  .ctx-btn {
+    padding: 6px 12px;
+    font-size: 0.74rem;
+  }
+}
+
+/* ============================================================================
+ * STRICT MOBILE LANDSCAPE-ONLY ROTATION LOCK GATE
+ * ========================================================================== */
+.landscape-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: linear-gradient(155deg, #1d3c2e, #244b3a 60%, #442917);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.landscape-lock-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--cream-bg);
+  border: 3px solid var(--mango);
+  border-radius: 24px;
+  padding: 28px 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.landscape-lock-card h2 {
+  font-size: 1.3rem;
+  color: var(--green-deep);
+}
+.landscape-lock-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.rotate-phone-anim {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phone-outline {
+  width: 44px;
+  height: 76px;
+  border: 4px solid var(--green-deep);
+  border-radius: 10px;
+  background: var(--green-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rotateToLandscape 2.2s ease-in-out infinite;
+}
+.phone-screen-mini {
+  color: var(--mango-light);
+  font-size: 0.46rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 2px;
+}
+
+@keyframes rotateToLandscape {
+  0%, 15% {
+    transform: rotate(0deg);
+  }
+  45%, 75% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* CSS backup guard: always show rotation lock if portrait on narrow device */
+@media (orientation: portrait) and (max-width: 920px) {
+  .landscape-lock-overlay {
+    display: flex !important;
+  }
+}

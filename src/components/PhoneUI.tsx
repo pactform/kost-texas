@@ -51,7 +51,7 @@ export const PhoneUI: React.FC<PhoneUIProps> = ({ state, dispatch }) => {
   const warungAlert =
     state.warung.dailyOrders.filter((o) => o.status === 'pending').length +
     (state.warung.campusOrderActive && !state.warung.campusOrderResolved ? 1 : 0);
-  const activeMissions = state.missions.filter((m) => m.status === 'active').length;
+  const missionAlert = state.missions.filter((m) => m.status === 'active' && m.progress > 0 && !m.claimed).length;
 
   const wallpaperPhoto = state.wallpaperPhotoId
     ? state.photos.find((p) => p.id === state.wallpaperPhotoId)
@@ -77,11 +77,11 @@ export const PhoneUI: React.FC<PhoneUIProps> = ({ state, dispatch }) => {
     { id: 'kalender', label: 'Kalender', icon: <CalendarDays size={22} />, color: '#8C4D3B', badge: 0 },
     { id: 'peta', label: 'Peta Gang', icon: <MapPin size={22} />, color: '#3E7A5A', badge: 0 },
     { id: 'galeri', label: 'Galeri', icon: <ImageIcon size={22} />, color: '#A35C44', badge: 0 },
-    { id: 'misi', label: 'Misi', icon: <Target size={22} />, color: '#B87A24', badge: activeMissions },
+    { id: 'misi', label: 'Misi', icon: <Target size={22} />, color: '#B87A24', badge: missionAlert },
   ];
 
   return (
-    <aside className={`phone-shell ${state.phoneOpen ? 'mobile-open' : ''}`} aria-label="HP Owner Kost Texas">
+    <aside className={`phone-shell floating-3d ${state.phoneOpen ? 'open' : ''}`} aria-label="HP Owner Kost Texas">
       {/* Status Bar */}
       <div className="phone-statusbar">
         <span>

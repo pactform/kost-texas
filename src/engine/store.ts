@@ -170,7 +170,7 @@ export function createInitialState(hasPlayedBefore = false, skipOpeningNext = fa
       outfitId: 'genz_oversized',
       unlockedOutfits: ['genz_oversized', 'millennial_linen', 'aktivitas_kos'],
     },
-    ownerPos: { x: 7, y: 8, floor: 1 },
+    ownerPos: { x: 5.8, y: 6.2, floor: 1 },
     ownerEnergy: 100,
     ateToday: false,
     initialPlan: null,
@@ -2232,7 +2232,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         initialPlan: plan,
         signboardPlaced: true,
         slot: 'siang',
-        ownerPos: { x: 7, y: 8, floor: 1 },
+        ownerPos: { x: 5.8, y: 6.2, floor: 1 },
       };
 
       const { state: afterBuildCost } = recordTx(next, {
